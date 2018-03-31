@@ -10,7 +10,7 @@ using CustomVariables;
 //Controls the flow of everything at runtime
 public class RunTimeManager : MonoBehaviour {
 
-	ScriptParser parser;
+	public ScriptParser parser;
 	ShotDatabase database;
 	LineOfAction LOA_decider;
 
@@ -26,35 +26,39 @@ public class RunTimeManager : MonoBehaviour {
 
 	GameObject mainCam;
 
+	public Dictionary<int, string> ShotDropDown;
+	//used in dropdown menu
+	public string[] options = new string[] {
+		"FrameShare", "Default", "HighAngle", "LowAngle", "Previous"
+	};
+
+	//FOR GOAL GUI
+	public Dictionary<string, int> goalDict;
+
 
 	// Use this for initialization
 	void Start () {
 
-		//Reference the camera
+
 		mainCam = GameObject.FindGameObjectWithTag ("MainCamera");
 
-		//Default is Left Side
-		CameraSide = Side.Right;
+		CameraSide = Side.Left;
 
-		//Reference of Line of Action Decider
 		LOA_decider = GetComponent<LineOfAction>();
-		//Reference to database
 		database = GetComponent<ShotDatabase> ();
-		//Parse the script & populate dialogue list
 		parser = GetComponent<ScriptParser> ();
 		dialogSequence = parser.parseScript();
 
+
+
 		//Assign Shots to Dialogues correlating with goals
 		ResetShots ();
-
-
-		//TESTING
-		PlayScene();
 
 	}
 
 	public void PlayScene()
 	{
+		ResetShots ();
 		StopAllCoroutines ();
 		StartCoroutine(PlayPreViz());
 	}
@@ -65,41 +69,42 @@ public class RunTimeManager : MonoBehaviour {
 	//SENARIO: User updates goals/side of dialogue and needs shots need to be reassigned for dialogue
 	public void ResetShots()
 	{
+		//FOR GUI
+		//total number of shots in scene
+		int NumShotsScene = 0;
+
 		print ("ResetShots");
-		//Looking at left or right
-		LOA_decider.associateActorsWithSide (CameraSide);
+		LOA_decider.SetSide (CameraSide);
 
 		List<CameraShot> shots;
-		//Assign Shots to dialogue sequence
 		for (int i = 0; i < dialogSequence.Count; i++) {
 
-			//if Goal is PREVIOUS and not the first dialogue
-			if (dialogSequence [i].goals [0] == Goal.Previous && i > 0) {
+			//GOAL = PREVIOUS 
+			if (dialogSequence [i].goals [0] == "Previous" && i > 0) {
 				shots = new List<CameraShot> ();
-				//Get last shot of previous dialogue
 				int lastIndex = dialogSequence [i - 1].shotSequence.Count - 1;
 				shots.Add (dialogSequence [i - 1].shotSequence[lastIndex]);
 			} 
-			//Recalculates shot position with new goal
+				
 			else {
+				//Gets list of finalized shot for each goal
 				shots = database.getShotList (dialogSequence [i].goals, dialogSequence [i].ActorID);
 			}
-
 			dialogSequence [i].SetSequence (shots);
-		}  
+			NumShotsScene += dialogSequence [i].shotSequence.Count;
+		}
+			
+		//make dictionary for GUI
+		//associate string with index for popup
+		//TODO CALL WHEN USER ADDS SHOT
+		goalDict = new Dictionary<string, int>();
+		for (int i = 0; i < options.Length; i++)
+		{
+			goalDict.Add (options [i], i); 
+		} 
 	}
-
-
-	//TODO EDITOR_METHOD
-	//ADD + REMOVE GOALS
-	//FOR EACH GOAL
-	//***SET DURATION
-	//**SET X Y OFFSET
-	//**SET POS & ROT
-	//FOR EACH DIALOGUE
-	//OBJECT OF IMPORTANCE?
 		
-
+		
 	IEnumerator PlayPreViz()
 	{
 		int CurrentDialogueIndex = 0;

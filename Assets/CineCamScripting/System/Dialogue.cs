@@ -14,7 +14,7 @@ using CustomVariables;
 public class Dialogue {
 
 
-	public List<Goal> goals;
+	public List<string> goals;
 
 	public string dialogText;
 	public string ActorID;
@@ -29,7 +29,7 @@ public class Dialogue {
 	//Constructor
 	//ONLY TAKES 1 GOAL AT A TIME
 	//TODO
-	public Dialogue(string dialog, string id, List<Goal> gs)
+	public Dialogue(string dialog, string id, List<string> gs)
 	{
 		dialogText = dialog;
 		ActorID = id;

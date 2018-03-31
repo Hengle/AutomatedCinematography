@@ -29,18 +29,18 @@ public class ScriptParser : MonoBehaviour {
 			string[] inputArray = line.Split (new char[] { ':' }, System.StringSplitOptions.None);
 
 			//If Script contains Goal description
-			List<Goal> goalList = new List<Goal> ();
-			Goal goalResult;
+			List<string> goalList = new List<string> ();
+			string goalResult;
 			if (inputArray.Length == 3) {
 				//Split the Goal input by ' , '
 				string[] goalSplitArray = inputArray [2].Split (new char[] { ',' }, System.StringSplitOptions.None);
 
 				for (int i = 0; i < goalSplitArray.Length; i++) {
-					goalResult = stringToEnum(goalSplitArray [i]);
+					goalResult = checkGoal(goalSplitArray [i]);
 					goalList.Add (goalResult);
 				}
 			} else {
-				goalList.Add (Goal.Default);
+				goalList.Add ("Default");
 			}
 				
 			Dialogue dialog = new Dialogue (inputArray [1], inputArray [0], goalList);
@@ -55,35 +55,30 @@ public class ScriptParser : MonoBehaviour {
 		return dialogueSequence;
    	  }
 		
-	//Converts the strings to ENUMS
-	//GOAL LOOKUP LIBRARY
-	public Goal stringToEnum(string goal)
+	//Check if goal is Defined
+	//If not, return Default
+	public string checkGoal(string goal)
 	{
+
+		string[] possibleGoals = new string[] {
+			"Default", "DefaultInclude", "Close",
+			"FrameShare", "Long", "HighAngle",
+			"Medium", "ReverseCheck", "Previous",
+			"Intensify"
+		};
 		goal = goal.Replace(" ", string.Empty);
 
-		switch (goal) {
-		case "Default":
-			return Goal.Default;
-		case "DefaultInclude":
-			return Goal.DefaultInclude;
-		case "Close":
-			return Goal.Close;
-		case "FrameShare":
-			return Goal.FrameShare;
-		case "Long":
-			return Goal.Long;
-		case "HighAngle":
-			return Goal.HighAngle;
-		case "Medium":
-			return Goal.Medium;
-		case "ReverseCheck":
-			return Goal.ReverseCheck;
-		case "Previous":
-			return Goal.Previous;
-		case "Intensify":
-			return Goal.Intensify;
-		default:
-			return Goal.Default;
+		bool goalInList = false;
+		for (int i = 0; i < possibleGoals.Length; i++) {
+			if (goal == possibleGoals [i]) {
+				goalInList = true;
+			}
+		}
+
+		if (goalInList) {
+			return goal;
+		} else {
+			return "Default";
 		}
 	}
 

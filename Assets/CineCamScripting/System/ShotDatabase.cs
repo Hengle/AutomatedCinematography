@@ -9,19 +9,15 @@ public class ShotDatabase : MonoBehaviour {
 	//KEY maps to shot list
 	//KEY = GOAL
 	[SerializeField]
-	public Dictionary<Goal, List<CameraShot>> shotsLibrary;
+	public Dictionary<string, List<CameraShot>> shotsLibrary;
 
 	//INPUT: List of Goals, ActorID saying Dialogue
 	//OUTPUT: List of finalized shots correlating to goal
 	//Called from ResetShots()
 	//TODO SHOT RANKING - OCCLUSION
-	public List<CameraShot> getShotList(List<Goal> goals, string actor)
+	public List<CameraShot> getShotList(List<string> goals, string actor)
 	{
-		//Recalculate Shots with side for specific actor
-		LineOfAction LOA_decider = GetComponent<LineOfAction>();
-		Side currentSide = LOA_decider.getSide (actor);
-
-		InstantiateShots (currentSide, actor);
+		CalculateShotsAround (actor);
 
 		//Instantiate list
 		List<CameraShot> finalizedShotList = new List<CameraShot> ();
@@ -31,7 +27,6 @@ public class ShotDatabase : MonoBehaviour {
 			
 			//Get list of every possible position for that GOAL
 			List<CameraShot> shotList = shotsLibrary [goals [i]];
-
 			//Do Occulsiion Ranking
 			finalizedShotList.Add(shotList[0]);
 		}
@@ -41,13 +36,12 @@ public class ShotDatabase : MonoBehaviour {
 
 	//ASSOCIATE GOALS WITH SHOTS
 	//Defines shot positions for every GOAL
-	//Called from ResetShots
-	public void InstantiateShots(Side side, string actor)
+	public void CalculateShotsAround(string actor)
 	{
 
 		/*Camera Shot Paramters
 		  --G - Type of shot
-		  --Side - Left or Right
+		  --Marker - Left or Right
 		  --Dist - Distance from target
 		  --H - Height change, used for high and low angles
 		  --O - Degrees of orbit around target
@@ -57,28 +51,32 @@ public class ShotDatabase : MonoBehaviour {
 
         */
 
-		shotsLibrary = new Dictionary<Goal, List<CameraShot>> ();
+		//Recalculate Shots with side for specific actor
+		LineOfAction LOA_decider = GetComponent<LineOfAction>();
+		Vector3 marker = LOA_decider.getSide ();
+
+		shotsLibrary = new Dictionary<string, List<CameraShot>> ();
 		//Camera Shot(SIDE, DISTANCE, HEIGHT, OrbitAngle)
 		//DEFAULT
 		List<CameraShot> defaultList = new List<CameraShot> ();
-		defaultList.Add (new CameraShot (Goal.Default, side, 2.0f, 0.0f, 30.0f, -0.5f, actor));
-		defaultList.Add (new CameraShot (Goal.Default, side, 2.0f, 0.0f, 45.0f, 0.0f, actor));
-		shotsLibrary.Add(Goal.Default, defaultList); 
-
-		List<CameraShot> defaultInclude = new List<CameraShot> ();
-		defaultList.Add (new CameraShot (Goal.DefaultInclude, side, 2.0f, 0.0f, 30.0f, 0.0f, actor, findOpposite (actor)));
-		defaultList.Add (new CameraShot (Goal.DefaultInclude, side, 2.0f, 0.0f, 45.0f, 0.0f, actor, findOpposite (actor)));
-		shotsLibrary.Add(Goal.DefaultInclude, defaultList); 
+		defaultList.Add (new CameraShot ("Default", marker, 2.0f, 0.0f, 30.0f, -0.5f, actor));
+		defaultList.Add (new CameraShot ("Default", marker, 2.0f, 0.0f, 45.0f, 0.0f, actor));
+		shotsLibrary.Add("Default", defaultList); 
 
 		List<CameraShot> highAngleList = new List<CameraShot> ();
-		highAngleList.Add (new CameraShot (Goal.HighAngle, side, 2.0f, 4.0f, 45.0f, 0.0f, actor));
-		highAngleList.Add (new CameraShot (Goal.HighAngle, side, 2.0f, 1.0f, 0.0f, 0.0f, actor));
-		shotsLibrary.Add (Goal.HighAngle, highAngleList);
+		highAngleList.Add (new CameraShot ("HighAngle", marker, 2.0f, 4.0f, 45.0f, 0.0f, actor));
+		highAngleList.Add (new CameraShot ("HighAngle", marker, 2.0f, 1.0f, 0.0f, 0.0f, actor));
+		shotsLibrary.Add ("HighAngle", highAngleList);
+
+		List<CameraShot> lowAngleList = new List<CameraShot> ();
+		highAngleList.Add (new CameraShot ("LowAngle", marker, 2.0f, 4.0f, 45.0f, 0.0f, actor));
+		highAngleList.Add (new CameraShot ("LowAngle", marker, 2.0f, 1.0f, 0.0f, 0.0f, actor));
+		shotsLibrary.Add ("LowAngle", lowAngleList);
 
 		List<CameraShot> frameShareList = new List<CameraShot> ();
-		frameShareList.Add( new CameraShot (Goal.FrameShare, side, 5.0f, 1.0f, 45.0f, 0.0f, actor, findOpposite (actor)));
-		frameShareList.Add( new CameraShot (Goal.FrameShare, side, 2.0f, 1.0f, 0.0f, 0.0f, actor, findOpposite (actor)));
-		shotsLibrary.Add (Goal.FrameShare, frameShareList);
+		frameShareList.Add( new CameraShot ("FrameShare", marker, 5.0f, -1.0f, 45.0f, 0.0f, actor, findOpposite (actor)));
+		frameShareList.Add( new CameraShot ("FrameShare", marker, 2.0f, 1.0f, 0.0f, 0.0f, actor, findOpposite (actor)));
+		shotsLibrary.Add ("FrameShare", frameShareList);
 	}
 
 

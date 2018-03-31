@@ -1,8 +1,8 @@
-ActorA: actorA says this1111 : FrameShare
+ActorA: actorB says this1111 : FrameShare, Default
 ActorB: actorB says this2222 : FrameShare
 ActorA: actorA says this3333 
-ActorB: actorB says this4444 : HighAngle, Default
+ActorB: actorB says this4444 
 ActorA: actorA says this5555 
-ActorB: actorB says this6666 : FrameShare
+ActorB: actorB says this6666 : HighAngle, FrameShare
 ActorB: actorB says this7777 : Previous
 ActorA: actorA says this8888 : Default, FrameShare, Default
