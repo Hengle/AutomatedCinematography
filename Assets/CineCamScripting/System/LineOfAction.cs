@@ -18,6 +18,7 @@ public class LineOfAction : MonoBehaviour {
 
 
 	Vector3 SideMarker;
+	//Supports only 2 actors in scene
 	//Sets left and right markers
 	//markers determine 
 	//	1) where camera orbits
@@ -25,8 +26,13 @@ public class LineOfAction : MonoBehaviour {
 	public void SetSide(Side s)
 	{
 
-		markerRight = new GameObject ();
-		markerLeft = new GameObject ();
+		if (markerRight == null && markerLeft == null) 
+		{
+			markerRight = new GameObject ();
+			markerRight.name = "markerRight";
+			markerLeft = new GameObject ();
+			markerLeft.name = "markerLeft";
+		}
 
 		List<string> actors = GetComponent<ScriptParser> ().actors;
 

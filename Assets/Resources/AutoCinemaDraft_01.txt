@@ -1,0 +1,66 @@
+Title:
+   AutoCinemaScript
+Author:
+   Ryan Sharpe
+
+
+Scene 011
+
+The characters walk into a shop and everyone is surprised. Action description.
+
+ACTORA
+(FrameShare, Default)
+actorB says this1111
+
+Everyone looks around confused
+
+ACTORB
+(FrameShare)
+actorB says this2222
+
+Another action happens
+
+ACTORA
+(LowAngle)
+actorA says this3333
+
+Another actions happens after actorA
+
+A TRANSITION
+HAPPENS:
+
+A NEW ACT HAPPENS
+
+SCENE HEADING IS HERE
+
+An action happens in the new scene
+
+ACTORB
+actorB says this4444
+
+ACTORA
+ActorA says this5555
+
+ACTORB
+(HighAngle, FrameShare)
+ActorB says this6666
+(more parenthetical information)
+
+ACTORA
+ActorA says this7777
+
+Another action description
+
+ACTORB
+(Default, FameShare, Default, FrameShare)
+ActorB says this8888
+
+> FDSFDS:
+
+> ACT 1: THE NEW THING <
+
+Action description
+
+> ACT END <
+
+.scene heading

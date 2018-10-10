@@ -3,42 +3,74 @@ using System.Collections.Generic;
 using UnityEngine;
 using CustomVariables;
 
+[ExecuteInEditMode]
 [System.Serializable]
 public class ShotDatabase : MonoBehaviour {
 
 	//KEY maps to shot list
 	//KEY = GOAL
 	[SerializeField]
-	public Dictionary<string, List<CameraShot>> shotsLibrary;
+	public Dictionary<string, ShotDefinition> defLibrary;
 
-	//INPUT: List of Goals, ActorID saying Dialogue
-	//OUTPUT: List of finalized shots correlating to goal
-	//Called from ResetShots()
-	//TODO SHOT RANKING - OCCLUSION
-	public List<CameraShot> getShotList(List<string> goals, string actor)
+    public class ShotDefinition
 	{
-		CalculateShotsAround (actor);
+		public ClassType ClassName;
+		public string goal;
+		public float dist;
+		public float H;
+		public float O;
+		public float bX;
 
-		//Instantiate list
-		List<CameraShot> finalizedShotList = new List<CameraShot> ();
-
-		//For every GOAL in the DIALOGUE
-		for (int i = 0; i < goals.Count; i++) {
-			
-			//Get list of every possible position for that GOAL
-			List<CameraShot> shotList = shotsLibrary [goals [i]];
-			//Do Occulsiion Ranking
-			finalizedShotList.Add(shotList[0]);
+		public ShotDefinition(ClassType cl, string go, float d, float h, float o, float b)
+		{
+			ClassName = cl;
+			goal = go;
+			dist = d;
+			H = h;
+			O = o;
+			bX = b;
 		}
-		//Return list finalized shot for every goal
-		return finalizedShotList;
 	}
 
-	//ASSOCIATE GOALS WITH SHOTS
-	//Defines shot positions for every GOAL
-	public void CalculateShotsAround(string actor)
+	//Look up the goal, recalculate around the actor
+	public CameraShot ShotGet(string goal, string actor)
 	{
+		Vector3 marker = GetComponent<LineOfAction>().getSide();
+		
+		if(defLibrary[goal].ClassName == ClassType.CameraShot){
+			return new CameraShot(goal, marker, defLibrary[goal].dist, defLibrary[goal].H, defLibrary[goal].O, defLibrary[goal].bX, actor);
+		}
+		else if(defLibrary[goal].ClassName == ClassType.FrameShare){
+			return new FrameShare(goal, marker, defLibrary[goal].dist, defLibrary[goal].H, defLibrary[goal].O, defLibrary[goal].bX, actor, findOpposite(actor));
+		}
 
+		else if(defLibrary[goal].ClassName == ClassType.OverShoulder){
+			return new OverShoulder(goal, marker, defLibrary[goal].dist, defLibrary[goal].H, defLibrary[goal].O, defLibrary[goal].bX, actor, findOpposite(actor));
+		}
+		else{
+			    Debug.Log("SHOULD NOT GET HERE IN SHOTGET");
+				return null;
+			}
+	}
+
+	public void AddShotToLibrary(ClassType type, string goal, float Dist, float H, float O, float Bx)
+	{
+		if(type == ClassType.CameraShot)
+		{
+			defLibrary.Add(goal, new ShotDefinition(ClassType.CameraShot, goal, Dist, H, O, Bx));
+		}
+		else if(type == ClassType.FrameShare)
+		{
+			defLibrary.Add(goal, new ShotDefinition(ClassType.FrameShare, goal, Dist, H, O, Bx));
+		}
+		else if(type == ClassType.OverShoulder)
+		{
+			defLibrary.Add(goal, new ShotDefinition(ClassType.OverShoulder, goal, Dist, H, O, Bx));
+		}
+	}
+
+	public void SetUpDatabase()
+	{
 		/*Camera Shot Paramters
 		  --G - Type of shot
 		  --Marker - Left or Right
@@ -48,37 +80,21 @@ public class ShotDatabase : MonoBehaviour {
 		  --Bx - Bias shift on X axsis
 		  --A - Actor that is target being looked at
 		  --Op - Opposite Actor that is included in shot
-
         */
 
-		//Recalculate Shots with side for specific actor
-		LineOfAction LOA_decider = GetComponent<LineOfAction>();
-		Vector3 marker = LOA_decider.getSide ();
+		defLibrary = new Dictionary<string, ShotDefinition>();
+		defLibrary.Add("Default", new ShotDefinition (ClassType.CameraShot, "Default", 2.0f, 0.0f, 30.0f, -0.5f));
+		defLibrary.Add("Default/Mid", new ShotDefinition(ClassType.CameraShot, "Default/Mid", 1.5f, 0.0f, 30.0f, -0.5f));
+		defLibrary.Add("Default/Close", new ShotDefinition(ClassType.CameraShot, "Default/Close", 1.5f, 0.0f, 30.0f, -0.5f));
+		defLibrary.Add("Default/XtremeClose", new ShotDefinition(ClassType.CameraShot, "Default/XtremeClose", 0.5f, 0.0f, 30.0f, -0.5f));
+		defLibrary.Add ("HighAngle", new ShotDefinition (ClassType.CameraShot,"HighAngle",  2.0f, 4.0f, 45.0f, 0.0f));
+		defLibrary.Add ("LowAngle", new ShotDefinition (ClassType.CameraShot, "LowAngle", 2.0f, -1.0f, 45.0f, 0.0f));
+		defLibrary.Add("Parallel", new ShotDefinition (ClassType.CameraShot, "Parallel", 2.0f, 0.0f, 90.0f, 0.0f)); 
 
-		shotsLibrary = new Dictionary<string, List<CameraShot>> ();
-		//Camera Shot(SIDE, DISTANCE, HEIGHT, OrbitAngle)
-		//DEFAULT
-		List<CameraShot> defaultList = new List<CameraShot> ();
-		defaultList.Add (new CameraShot ("Default", marker, 2.0f, 0.0f, 30.0f, -0.5f, actor));
-		defaultList.Add (new CameraShot ("Default", marker, 2.0f, 0.0f, 45.0f, 0.0f, actor));
-		shotsLibrary.Add("Default", defaultList); 
+		defLibrary.Add("FrameShare", new ShotDefinition (ClassType.FrameShare, "FrameShare", 5.0f, 1.0f, 0.0f, 0.0f));
+		defLibrary.Add("OverShoulder", new ShotDefinition (ClassType.OverShoulder, "OverShoulder", 2.14f, 0.1f, 140.0f, 0.0f));
 
-		List<CameraShot> highAngleList = new List<CameraShot> ();
-		highAngleList.Add (new CameraShot ("HighAngle", marker, 2.0f, 4.0f, 45.0f, 0.0f, actor));
-		highAngleList.Add (new CameraShot ("HighAngle", marker, 2.0f, 1.0f, 0.0f, 0.0f, actor));
-		shotsLibrary.Add ("HighAngle", highAngleList);
-
-		List<CameraShot> lowAngleList = new List<CameraShot> ();
-		highAngleList.Add (new CameraShot ("LowAngle", marker, 2.0f, 4.0f, 45.0f, 0.0f, actor));
-		highAngleList.Add (new CameraShot ("LowAngle", marker, 2.0f, 1.0f, 0.0f, 0.0f, actor));
-		shotsLibrary.Add ("LowAngle", lowAngleList);
-
-		List<CameraShot> frameShareList = new List<CameraShot> ();
-		frameShareList.Add( new CameraShot ("FrameShare", marker, 5.0f, -1.0f, 45.0f, 0.0f, actor, findOpposite (actor)));
-		frameShareList.Add( new CameraShot ("FrameShare", marker, 2.0f, 1.0f, 0.0f, 0.0f, actor, findOpposite (actor)));
-		shotsLibrary.Add ("FrameShare", frameShareList);
 	}
-
 
 	//IF 2 ACTORS IN Scene finds opposite actor for include shots
 	public string findOpposite(string actor)
@@ -97,11 +113,4 @@ public class ShotDatabase : MonoBehaviour {
 			return actor;
 		}
 	}
-
-	//FOR SAVING AND ADDING SHOTS 
-	public void AddShot(string NAME, Vector3 pos, Quaternion rot)
-	{
-		//Goal thing = Goal (NAME);
-	}
-
 }

@@ -10,10 +10,38 @@ public class ScriptParser : MonoBehaviour {
 	//List of Unique Actors
 	public List<string> actors;
 
+
+
+	bool IsAllUpper(string input)
+	{
+		for (int i = 0; i < input.Length; i++) {
+			if (!char.IsUpper (input [i]))
+				return false;
+		}
+
+		return true;
+	}
+
+	public void readFountain()
+	{
+		List<Dialogue> dialogueSequence = new List<Dialogue> ();
+		actors = new List<string> ();
+
+		string path = "Assets/Resources/AutoCinemaDraft_01.fountain";
+		StreamReader TextReader = new StreamReader(path);
+		StreamReader tmpReader = new StreamReader(path);
+	}
+
+
+
+
 	//Takes a textfile of a scipt
 	//parses the dialogue and actors and returns a list of Dialogue objects
 	public List<Dialogue> parseScript ()
 	{
+
+		readFountain ();
+
 		actors = new List<string> ();
 
 		string path = "Assets/Resources/script.txt";
@@ -42,7 +70,8 @@ public class ScriptParser : MonoBehaviour {
 			} else {
 				goalList.Add ("Default");
 			}
-				
+
+			//If the goals has been written into the script	
 			Dialogue dialog = new Dialogue (inputArray [1], inputArray [0], goalList);
 			dialogueSequence.Add (dialog);
 
@@ -61,12 +90,13 @@ public class ScriptParser : MonoBehaviour {
 	{
 
 		string[] possibleGoals = new string[] {
-			"Default", "DefaultInclude", "Close",
+			"Default", "Close",
 			"FrameShare", "Long", "HighAngle",
-			"Medium", "ReverseCheck", "Previous",
-			"Intensify"
+			"Medium", "ReverseCheck",
+			"Intensify", "OverShoulder"
 		};
 		goal = goal.Replace(" ", string.Empty);
+
 
 		bool goalInList = false;
 		for (int i = 0; i < possibleGoals.Length; i++) {
@@ -77,7 +107,9 @@ public class ScriptParser : MonoBehaviour {
 
 		if (goalInList) {
 			return goal;
-		} else {
+		}
+
+		else {
 			return "Default";
 		}
 	}

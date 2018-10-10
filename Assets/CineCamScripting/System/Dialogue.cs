@@ -14,6 +14,7 @@ using CustomVariables;
 public class Dialogue {
 
 
+	//Should be the same length as shotSequence...
 	public List<string> goals;
 
 	public string dialogText;
@@ -22,6 +23,8 @@ public class Dialogue {
 	public AudioClip clip;
 	//Calculate shot time from audio clip length?
 	public float shotSeconds;
+
+
 
 	public List<CameraShot> shotSequence;
 
