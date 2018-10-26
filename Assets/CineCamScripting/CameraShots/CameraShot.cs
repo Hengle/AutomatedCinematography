@@ -79,6 +79,8 @@ public enum ClassType {CameraShot, FrameShare, OverShoulder};
 			}
 		}
 
+
+
     	//Focused on only 1 Actor not frame sharing
     	public CameraShot(string g, Vector3 m, float dist, float h, float o, float bx, string a)
 		{
@@ -119,7 +121,6 @@ public enum ClassType {CameraShot, FrameShare, OverShoulder};
 			GameObject cam = new GameObject();
 			cam.transform.position = CamPos;
 
-
 			cam.transform.RotateAround (targPos, Vector3.up, orbitAngle);
 			Vector3 option1 = cam.transform.position;
 			//reset 
@@ -131,17 +132,20 @@ public enum ClassType {CameraShot, FrameShare, OverShoulder};
 	    
 			//Look Directly at Target
 			CamRot = Quaternion.LookRotation(targPos - CamPos);
-
-			//APPLY BIAS SHIFT
-			/* cam.transform.localPosition += Vector3.right * biasX;
-			option1 = cam.transform.position;
-			//reset
-			cam.transform.position = CamPos;
-			cam.transform.localPosition += Vector3.right * -biasX;
-			option2 = cam.transform.position; */
 			
-			CamPos = GetClosest (sidemarker, option1, option2); 
+			//APPLY BIAS SHIFT
+			cam.transform.position = CamPos;
 
+			cam.transform.position += Vector3.forward * biasX;
+			option1 = cam.transform.position;
+
+			cam.transform.position = CamPos;
+			//Apply Bias shift to marker2
+			cam.transform.position += Vector3.forward * -biasX;
+			option2 = cam.transform.position; 
+			
+			CamPos = GetFarthest (sidemarker, option1, option2);  
+			
 			UnityEngine.Object.DestroyImmediate (cam);
 	}
 

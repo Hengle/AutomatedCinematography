@@ -1,9 +1,9 @@
-ACTORA: actorB says this1111 : Default
-ACTORB: actorB says this2222 : 
-ACTORA: actorA says this3333 
-ACTORB: actorB says this4444 : Default, FrameShare, Default
-ACTORA: actorA says this5555 
-ACTORB: actorB says this6666 : HighAngle, FrameShare
-ACTORB: actorB says this7777 : 
-ACTORA: actorA says this8888 : Default, FrameShare, Default, FrameShare
-ACTORB: actorsB says this999 : 
+ACTORA: I just... did my job. I hunted and killed across the galaxy. "Away on business", my wife would tell me. I was always on business. : Default
+ACTORB: You never mentioned this before. Why now? : 
+ACTORA: When my wife departed from her body, I attended to that issue. I left Kolyat in the care of his aunts and uncles. 
+ACTORA: I have not seen him or talked to him since : 
+ACTORB: That's not the choice I expected. Why didn't you raise him yourself? 
+ACTORA: My body is blessed with the skills to take life. The hanar honed them in me. I have few others.
+ACTORB: He'll have to explain that one to me.
+ACTORA: Body and soul work as one in a whole person.
+ACTORB: What's wrong with him, is he hurt? 

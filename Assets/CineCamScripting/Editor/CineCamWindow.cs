@@ -1,18 +1,20 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using CustomVariables;
+using ShotDef;
 using UnityEngine.Audio;
 using UnityEngine.Animations;
 
 //Connected to RunTimeManager
 [ExecuteInEditMode]
-public class CineCamWindow : EditorWindow 
+public class CineCamWindow : EditorWindow
 {
- Object[] AudioList = new Object[100];
- Object[] AnimationList = new Object[100];
+ AudioClip[] AudioList = new AudioClip[100];
+ Animation[] AnimationList = new Animation[100];
 
 	//EDITOR VARIABLES
 	CameraShot E_shot;
@@ -23,6 +25,12 @@ public class CineCamWindow : EditorWindow
 	//True -- EditMode Panel
 	//False -- SaveNewShot Panel
 	static bool CustomizerPanel;
+
+	//Custom Shot Variables
+	 ShotDefinition shot;
+	int CurrentIndex;
+	int tmpIndex;
+	string C_value = "Default";
 
 	//PREVIEW UTILITY
 	private PreviewRenderUtility previewRenderer;
@@ -39,9 +47,16 @@ public class CineCamWindow : EditorWindow
 		window.minSize = new Vector2(1000f, 100f);
 		window.autoRepaintOnSceneChange = true;
 		window.Show();
+		
+	}
+
+	public void PrintDumbThing()
+	{
+		Debug.Log("YEE");
 	}
 
      Vector2 scrollPosition = Vector2.zero;
+	 
 
 
 	void OnGUI()
@@ -53,6 +68,14 @@ public class CineCamWindow : EditorWindow
 			GameObject managerRef = GameObject.Find ("AutoCineManager");
 			runtime_manager = managerRef.GetComponent<RunTimeManager> ();
 			List<Dialogue> dialogList = runtime_manager.dialogSequence;
+
+	//Camera Creator Default
+	  if(shot == null)
+	   {
+		   ShotDefinition refy = runtime_manager.database.defLibrary["Default"];
+		   shot = new ShotDefinition(refy.ClassName, refy.goal, refy.dist, refy.H, refy.O, refy.bX);
+	   }
+
 
             //HEADERS
 			GUIStyle labelStyle = new GUIStyle();
@@ -122,21 +145,22 @@ public class CineCamWindow : EditorWindow
 					{
 						int index;
 						GUILayout.BeginHorizontal("box");
-						index = EditorGUILayout.Popup(runtime_manager.goalDict[dialogList[i].goals[j]], runtime_manager.options, GUILayout.Width(80));
+						index = EditorGUILayout.Popup(runtime_manager.goalDict[dialogList[i].goals[j]], runtime_manager.options.ToArray(), GUILayout.Width(80));
 						
 						//check if it's been updated
 						if(dialogList[i].goals[j] != runtime_manager.options[index])
 						{
 							dialogList[i].goals[j] = runtime_manager.options[index];
 							runtime_manager.UpdateShot(i, j, dialogList[i].goals[j]);
-
 						}
+
 						//update goal from popupmenu
 						dialogList[i].goals[j] = runtime_manager.options[index]; 
 						
 
 						if(GUILayout.Button("Edit", GUILayout.Width(40), GUILayout.Height(15)))
 						{
+							CustomizerPanel = true;
 							dialogList[i].shotSequence[j].isEditing = true;
 							SetShotEditor( dialogList[i].shotSequence[j], i, j );
 
@@ -177,10 +201,10 @@ public class CineCamWindow : EditorWindow
 				        EditorGUILayout.BeginVertical();
 
 						GUILayout.Label ("Character Audio", EditorStyles.boldLabel);
-						AudioList[i] = EditorGUILayout.ObjectField(AudioList[i], typeof(AudioClip), false);
+						AudioList[i] = (AudioClip) EditorGUILayout.ObjectField(AudioList[i], typeof(AudioClip), false);
 						
 						GUILayout.Label ("Character Animation", EditorStyles.boldLabel);
-						AnimationList[i] = EditorGUILayout.ObjectField(AnimationList[i], typeof(Animation), false);
+						AnimationList[i] = (Animation) EditorGUILayout.ObjectField(AnimationList[i], typeof(Animation), false);
         				
 						EditorGUILayout.EndVertical();
 				}
@@ -203,24 +227,37 @@ public class CineCamWindow : EditorWindow
 			labelStyyle.fontSize = 15;
 			labelStyyle.fontStyle = FontStyle.Bold;
 
-			GUILayout.Label("CUSTOMIZE SHOT", labelStyyle);
+			GUIStyle labelStyyle02 = new GUIStyle();
+			labelStyyle02.fontSize = 13;
+			labelStyyle02.fontStyle = FontStyle.Italic;
+
+			GUILayout.Label("SHOT CUSTOMIZER", labelStyyle);
 
 			//SAVE (Overwrite mode)
 			if(CustomizerPanel)
 			{
+					GUILayout.Label("Edit Current Shot", labelStyyle02);
+
+					try{
 					GUILayout.Label("Shot: " + E_shot.goal, EditorStyles.boldLabel);
 			
 					E_shot.orbitAngle = EditorGUILayout.FloatField("OrbitAngle", E_shot.orbitAngle);
 					E_shot.height = EditorGUILayout.FloatField("Height", E_shot.height);
-					E_shot.biasX = EditorGUILayout.FloatField("X_Bias", E_shot.biasX);
 					E_shot.distanceFromTarget = EditorGUILayout.FloatField("Distance", E_shot.distanceFromTarget);
+					E_shot.biasX = EditorGUILayout.FloatField("X_Bias", E_shot.biasX);
+					}
+
+					catch{
+						GUILayout.Label("SELECT 'Edit' ON A SHOT", labelStyyle);
+					}
 				
 
 				//SAVE -- CREATE NEW BUTTON -- BUTTON LAYOUT
-				using (var horizontalScope = new GUILayout.VerticalScope())
+				//Just use CameraShot object directly becuase editing existing values, not pulling from database
+				using (var horizontalScope = new GUILayout.HorizontalScope())
 				{			
-				  if(GUILayout.Button("Overwrite Shot"))
-			  	{
+				  if(E_shot != null && GUILayout.Button("Overwrite Shot"))
+			      {
 				  Vector3 mark = E_shot.sidemarker;
                 	 //check if NOT FRAMESHARE
 
@@ -231,7 +268,7 @@ public class CineCamWindow : EditorWindow
 				 	}
 				 	else if(E_shot.goal == "OverShoulder")
 				 	{
-						 Debug.Log("Got here OS");
+						Debug.Log("Got here OS");
 					 	E_shot = new OverShoulder(E_shot.goal, E_shot.sidemarker, E_shot.distanceFromTarget, E_shot.height, E_shot.orbitAngle, E_shot.biasX, E_shot.actor, E_shot.oppositeActor);
 				 	} 
 				 	else
@@ -254,19 +291,37 @@ public class CineCamWindow : EditorWindow
 			//Create New Shot Panel
 			else
 			{
+				GUILayout.Label("Create New Shot", labelStyyle02);
+				//DropDown Menu
+				tmpIndex = EditorGUILayout.Popup(runtime_manager.goalDict[C_value] , runtime_manager.options.ToArray(), GUILayout.Width(80));
+
+				if(tmpIndex != CurrentIndex)
+				{
+					Debug.Log("CHANGED");
+					//if It has been changed
+					C_value = runtime_manager.options[tmpIndex];
+					ShotDefinition refy = runtime_manager.database.defLibrary[C_value];
+					shot = new ShotDefinition(refy.ClassName, refy.goal, refy.dist, refy.H, refy.O, refy.bX);
+					CurrentIndex = tmpIndex;
+				}
+				shot.goal = EditorGUILayout.TextField("Name Of Goal", shot.goal);
+				shot.O = EditorGUILayout.FloatField("Orbit", shot.O);
+				shot.H = EditorGUILayout.FloatField("Height", shot.H);
+				shot.dist = EditorGUILayout.FloatField("Distance", shot.dist);
+				shot.bX = EditorGUILayout.FloatField("X_Bias",shot.bX);
+
+				//Fields
 				using (var horizontalScope = new GUILayout.HorizontalScope())
 				{
-					if(GUILayout.Button("CREATE"))
-					{
-
-						//DropDown Menu to base shot off of
-						//Goal Name
-						//Other Properiies
-					}
 
 					if(GUILayout.Button("Back"))
 					{
 						CustomizerPanel = true;
+					}
+
+					if(GUILayout.Button("CREATE"))
+					{
+						runtime_manager.AddToDatabase(shot);
 					}
 				}
 			}
@@ -292,8 +347,9 @@ public class CineCamWindow : EditorWindow
 			GUILayout.EndVertical(); 
 
 		} //end of try
-		catch {
-			Debug.Log ("reference is null");
+		catch(Exception e) {
+			Debug.Log ("reference is null ");
+			//Debug.LogException(e, this);
 		}
 		//END OF PREVIZ BUTTONS
 
@@ -311,9 +367,6 @@ public class CineCamWindow : EditorWindow
 		{
 		  GameObject gameobj = GameObject.Find(runtime_manager.parser.actors[i]);
 
-
-		
-		  Debug.Log(i + " actor");
 		  DrawSelectedMesh(gameobj);
 		}
 
@@ -387,11 +440,6 @@ public static Vector3 ExtractTranslationFromMatrix(ref Matrix4x4 matrix) {
 	void SaveShot(CameraShot ss)
 	{
 		runtime_manager.dialogSequence[E_shot_Dindex].shotSequence[E_shot_Gindex] = ss;
-
-	}
-
-	void AddNewShotToDatabase(CameraShot ss)
-	{
 
 	}
 }

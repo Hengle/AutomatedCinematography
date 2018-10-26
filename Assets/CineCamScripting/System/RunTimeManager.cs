@@ -6,6 +6,7 @@ using UnityEngine.Timeline;
 using UnityEngine.Animations;
 using UnityEngine.UI;
 using CustomVariables;
+using ShotDef;
 
 
 
@@ -32,7 +33,9 @@ public class RunTimeManager : MonoBehaviour {
 
 	public Dictionary<int, string> ShotDropDown;
 	//used in dropdown menu
-	public string[] options;
+	//public string[] options;
+
+	public List<string> options;
 
 	//FOR GOAL GUI
 	public Dictionary<string, int> goalDict;
@@ -40,9 +43,11 @@ public class RunTimeManager : MonoBehaviour {
 
 	// Use this for initialization
 	public void Awake() {
-	    
-	    Debug.Log("EDITOR MODE AWAKE");
-		options = new string[] {"Default", "Default/Mid", "Default/Close", "Default/XtremeClose", "HighAngle", "LowAngle", "OverShoulder", "Parallel", "FrameShare"};
+		string[] op = new string[] {"Default", "Default/Mid", "Default/Close", "Default/XtremeClose", "HighAngle", "LowAngle", "OverShoulder", "Parallel", "FrameShare"};
+		options = new List<string>();
+		options.AddRange(op);
+
+		
 
 		mainCam = GameObject.FindGameObjectWithTag ("MainCamera");
 
@@ -55,9 +60,9 @@ public class RunTimeManager : MonoBehaviour {
 
 		//make dictionary for GUI
 		//associate string with index for popup
-		//TODO CALL WHEN USER ADDS SHOT IN CUSTOM
+		
 		goalDict = new Dictionary<string, int>();
-		for (int i = 0; i < options.Length; i++)
+		for (int i = 0; i < options.Count; i++)
 		{
 			goalDict.Add (options [i], i); 
 		} 
@@ -90,6 +95,13 @@ public class RunTimeManager : MonoBehaviour {
 		}
 	}
 
+	public void AddToDatabase(ShotDefinition ss)
+	{
+	   options.Add(ss.goal);
+	   goalDict.Add(ss.goal, options.Count-1);
+	   database.AddShotToLibrary(ss);
+	}
+
 	//Change goal of a Shot
 	public void UpdateShot(int D_index, int G_index, string goal)
 	{
@@ -107,15 +119,11 @@ public class RunTimeManager : MonoBehaviour {
 	IEnumerator PlayPreViz()
 	{
 		int CurrentDialogueIndex = 0;
-
-		Debug.Log(dialogSequence.Count);
 		while(CurrentDialogueIndex < dialogSequence.Count) 
 		{
 			//UPDATE BOTTOM UI
-
-			//This breaks everything
-			//actorIDText.text = dialogSequence [CurrentDialogueIndex].ActorID;
-			//dialogueText.text = dialogSequence [CurrentDialogueIndex].dialogText;
+			actorIDText.text = dialogSequence [CurrentDialogueIndex].ActorID;
+			dialogueText.text = dialogSequence [CurrentDialogueIndex].dialogText;
 
 			//UPDATE CAMERA POSITION
 			for(int shotIndex = 0; shotIndex < dialogSequence[CurrentDialogueIndex].shotSequence.Count; shotIndex++)

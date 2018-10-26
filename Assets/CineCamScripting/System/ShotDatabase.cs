@@ -2,16 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 using CustomVariables;
+using ShotDef;
 
-[ExecuteInEditMode]
-[System.Serializable]
-public class ShotDatabase : MonoBehaviour {
 
-	//KEY maps to shot list
-	//KEY = GOAL
-	[SerializeField]
-	public Dictionary<string, ShotDefinition> defLibrary;
-
+namespace ShotDef{
     public class ShotDefinition
 	{
 		public ClassType ClassName;
@@ -31,6 +25,18 @@ public class ShotDatabase : MonoBehaviour {
 			bX = b;
 		}
 	}
+}
+
+
+[ExecuteInEditMode]
+[System.Serializable]
+
+public class ShotDatabase : MonoBehaviour {
+
+	//KEY maps to shot list
+	//KEY = GOAL
+	[SerializeField]
+	public Dictionary<string, ShotDefinition> defLibrary;
 
 	//Look up the goal, recalculate around the actor
 	public CameraShot ShotGet(string goal, string actor)
@@ -53,20 +59,24 @@ public class ShotDatabase : MonoBehaviour {
 			}
 	}
 
-	public void AddShotToLibrary(ClassType type, string goal, float Dist, float H, float O, float Bx)
+	public void AddShotToLibrary(ShotDefinition sshot)
 	{
-		if(type == ClassType.CameraShot)
+		Debug.Log("Added goal" + sshot.goal);
+		
+
+		if(sshot.ClassName == ClassType.CameraShot)
 		{
-			defLibrary.Add(goal, new ShotDefinition(ClassType.CameraShot, goal, Dist, H, O, Bx));
+			defLibrary.Add(sshot.goal, new ShotDefinition(ClassType.CameraShot, sshot.goal, sshot.dist, sshot.H, sshot.O, sshot.bX));
 		}
-		else if(type == ClassType.FrameShare)
+		else if(sshot.ClassName == ClassType.FrameShare)
 		{
-			defLibrary.Add(goal, new ShotDefinition(ClassType.FrameShare, goal, Dist, H, O, Bx));
+			defLibrary.Add(sshot.goal, new ShotDefinition(ClassType.FrameShare, sshot.goal, sshot.dist, sshot.H, sshot.O, sshot.bX));
 		}
-		else if(type == ClassType.OverShoulder)
+		else if(sshot.ClassName == ClassType.OverShoulder)
 		{
-			defLibrary.Add(goal, new ShotDefinition(ClassType.OverShoulder, goal, Dist, H, O, Bx));
+			defLibrary.Add(sshot.goal, new ShotDefinition(ClassType.OverShoulder, sshot.goal, sshot.dist, sshot.H, sshot.O, sshot.bX));
 		}
+		
 	}
 
 	public void SetUpDatabase()
@@ -83,10 +93,10 @@ public class ShotDatabase : MonoBehaviour {
         */
 
 		defLibrary = new Dictionary<string, ShotDefinition>();
-		defLibrary.Add("Default", new ShotDefinition (ClassType.CameraShot, "Default", 2.0f, 0.0f, 30.0f, -0.5f));
-		defLibrary.Add("Default/Mid", new ShotDefinition(ClassType.CameraShot, "Default/Mid", 1.5f, 0.0f, 30.0f, -0.5f));
-		defLibrary.Add("Default/Close", new ShotDefinition(ClassType.CameraShot, "Default/Close", 1.5f, 0.0f, 30.0f, -0.5f));
-		defLibrary.Add("Default/XtremeClose", new ShotDefinition(ClassType.CameraShot, "Default/XtremeClose", 0.5f, 0.0f, 30.0f, -0.5f));
+		defLibrary.Add("Default", new ShotDefinition (ClassType.CameraShot, "Default", 2.0f, 0.0f, 30.0f, 0.5f));
+		defLibrary.Add("Default/Mid", new ShotDefinition(ClassType.CameraShot, "Default/Mid", 1.5f, 0.0f, 30.0f, 0.5f));
+		defLibrary.Add("Default/Close", new ShotDefinition(ClassType.CameraShot, "Default/Close", 1.3f, 0.0f, 30.0f, 0.5f));
+		defLibrary.Add("Default/XtremeClose", new ShotDefinition(ClassType.CameraShot, "Default/XtremeClose", 1f, 0.0f, 30.0f, 0.5f));
 		defLibrary.Add ("HighAngle", new ShotDefinition (ClassType.CameraShot,"HighAngle",  2.0f, 4.0f, 45.0f, 0.0f));
 		defLibrary.Add ("LowAngle", new ShotDefinition (ClassType.CameraShot, "LowAngle", 2.0f, -1.0f, 45.0f, 0.0f));
 		defLibrary.Add("Parallel", new ShotDefinition (ClassType.CameraShot, "Parallel", 2.0f, 0.0f, 90.0f, 0.0f)); 
